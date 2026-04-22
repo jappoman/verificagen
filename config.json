@@ -1,9 +1,9 @@
 {
-  "title": "Verifica di Informatica - Logica",
+  "title": "Verifica di Informatica - Documenti digitali e impaginazione",
   "subject": "Informatica",
   "output_pdf": "output/verifiche_generate.pdf",
-  "number_of_students": 24,
-  "number_of_versions": 8,
+  "number_of_students": 30,
+  "number_of_versions": 10,
   "max_points": 9.0,
   "random_seed": 12345,
   "banner": {
@@ -18,7 +18,7 @@
   },
   "instructions": {
     "enabled": true,
-    "content": "E' necessario il foglio di protocollo. Sul banco devono essere presenti solamente penne e fogli di protocollo. E' consentito l'uso della calcolatrice."
+    "content": "Leggi con attenzione ogni consegna. Rispondi in modo ordinato e chiaro. Nelle domande aperte e negli esercizi conta sia la correttezza dei contenuti sia la capacita' di organizzare le informazioni."
   },
   "evaluation_grid": {
     "enabled": true,
@@ -27,10 +27,10 @@
   "multiple_choice": {
     "enabled": true,
     "part_title": "Parte 1 - Quiz a risposta multipla",
-    "source_file": "multiple-choice-question/verifica_modulo_documenti_domande.json",
-    "questions_per_exam": 5,
+    "source_file": "multiple-choice-question/verifica_modulo_documenti_digitali.json",
+    "questions_per_exam": 6,
     "points_correct": 0.5,
-    "points_wrong": -0.25,
+    "points_wrong": 0,
     "shuffle_questions": true,
     "shuffle_options": true
   },
@@ -39,8 +39,8 @@
     "part_title": "Parte 2 - Domande aperte",
     "source_dir": "open-question",
     "include_ids": [
-      "open_drive_01",
-      "open_formatting_01"
+      "open_organizzazione_drive_01",
+      "open_formattazione_01"
     ]
   },
   "practical_exercises": {
@@ -48,7 +48,7 @@
     "part_title": "Parte 3 - Esercizi",
     "source_dir": "practical-exercises",
     "include_ids": [
-      "exercise_drive_01"
+      "exercise_documento_ordinato_01"
     ]
   }
 }

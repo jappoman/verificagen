@@ -283,10 +283,10 @@ def build_styles():
             name="Option",
             parent=styles["BodyText"],
             fontSize=10,
-            leading=11,
+            leading=12,
             leftIndent=12 * mm,
             firstLineIndent=0,
-            spaceAfter=0.5,
+            spaceAfter=0,
         )
     )
     styles.add(
@@ -504,11 +504,13 @@ def add_multiple_choice_section(flow: list[Any], exam: dict[str, Any], config: d
     score_label = f"(+{float(mc['points_correct']):g} / {float(mc['points_wrong']):g} pt)"
     flow.append(Paragraph(mc["part_title"], styles["SectionTitle"]))
     for index, question in enumerate(exam["multiple_choice"], start=1):
+        options_html = "<br/>".join(
+            f"{option['label']}. {option['text']}" for option in question.options
+        )
         question_block: list[Any] = [
-            Paragraph(f"{index}. {question.question} <b>{score_label}</b>", styles["Question"])
+            Paragraph(f"{index}. {question.question} <b>{score_label}</b>", styles["Question"]),
+            Paragraph(options_html, styles["Option"]),
         ]
-        for option in question.options:
-            question_block.append(Paragraph(f"{option['label']}. {option['text']}", styles["Option"]))
         question_block.append(Spacer(1, 3))
         flow.append(KeepTogether(question_block))
 
