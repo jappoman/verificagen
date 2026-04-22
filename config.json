@@ -18,7 +18,7 @@
   },
   "instructions": {
     "enabled": true,
-    "content": "E' necessario il foglio di protocollo. Sul banco devono essere presenti solamente penne e fogli di protocollo. E' consentito l'uso della calcolatrice."
+    "content": "È necessario il foglio di protocollo. Sul banco devono essere presenti solamente penne e fogli di protocollo. È consentito l'uso della calcolatrice."
   },
   "evaluation_grid": {
     "enabled": true,
