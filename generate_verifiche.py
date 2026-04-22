@@ -88,6 +88,18 @@ def validate_generation_counts(config: dict[str, Any]) -> None:
         raise ConfigError("number_of_versions non puo' essere maggiore di number_of_students.")
 
 
+def normalize_multiple_choice_scoring(config: dict[str, Any]) -> None:
+    mc_config = config.get("multiple_choice", {})
+    if not mc_config.get("enabled"):
+        return
+
+    points_correct = float(mc_config["points_correct"])
+    if points_correct <= 0:
+        raise ConfigError("points_correct deve essere positivo.")
+
+    mc_config["points_wrong"] = -points_correct / 2
+
+
 def collect_json_items(source_dir: Path) -> dict[str, dict[str, Any]]:
     items: dict[str, dict[str, Any]] = {}
     for path in sorted(source_dir.glob("*.json")):
@@ -550,11 +562,16 @@ def build_solutions_flow(exams: list[dict[str, Any]], config: dict[str, Any], st
             answers = [question.correct_option_label for question in exam["multiple_choice"]]
             summary_rows.append([exam["exam_id"]] + answers)
 
-        midpoint = (len(summary_rows) + 1) // 2
-        left_rows = [header_group] + summary_rows[:midpoint]
-        right_rows = [header_group] + summary_rows[midpoint:]
-
-        col_widths = [16 * mm] + [8 * mm] * question_count
+        version_count = len(summary_rows)
+        block_count = 3 if version_count >= 15 else 2
+        gutter = 6 * mm
+        available_width = 180 * mm
+        block_width = (available_width - gutter * (block_count - 1)) / block_count
+        version_col_width = min(16 * mm, max(11 * mm, block_width * 0.24))
+        answer_col_width = (block_width - version_col_width) / max(1, question_count)
+        col_widths = [version_col_width] + [answer_col_width] * question_count
+        body_font_size = 8 if block_count == 2 else 7
+        header_font_size = 8.5 if block_count == 2 else 7.5
 
         def make_answers_table(rows: list[list[str]]) -> Table:
             table = Table(rows, colWidths=col_widths, hAlign="LEFT")
@@ -569,9 +586,14 @@ def build_solutions_flow(exams: list[dict[str, Any]], config: dict[str, Any], st
                         ("LINEBEFORE", (0, 0), (0, last_row), 0.8, colors.black),
                         ("LINEAFTER", (last_col, 0), (last_col, last_row), 0.8, colors.black),
                         ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#e8edf4")),
+                        ("BACKGROUND", (0, 1), (0, last_row), colors.HexColor("#f2f5fa")),
                         ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-                        ("FONTSIZE", (0, 0), (-1, -1), 9),
-                        ("LEADING", (0, 0), (-1, -1), 11),
+                        ("FONTNAME", (0, 1), (0, last_row), "Helvetica-Bold"),
+                        ("FONTSIZE", (0, 0), (-1, 0), header_font_size),
+                        ("FONTSIZE", (0, 1), (-1, -1), body_font_size),
+                        ("LEADING", (0, 0), (-1, 0), header_font_size + 2),
+                        ("LEADING", (0, 1), (-1, -1), body_font_size + 2),
+                        ("ALIGN", (0, 0), (0, last_row), "CENTER"),
                         ("ALIGN", (1, 0), (-1, -1), "CENTER"),
                         ("VALIGN", (0, 0), (-1, -1), "TOP"),
                         ("LEFTPADDING", (0, 0), (-1, -1), 4),
@@ -583,13 +605,16 @@ def build_solutions_flow(exams: list[dict[str, Any]], config: dict[str, Any], st
             )
             return table
 
-        left_table = make_answers_table(left_rows)
-        right_table = make_answers_table(right_rows)
-        container = Table(
-            [[left_table, right_table]],
-            colWidths=[78 * mm, 78 * mm],
-            hAlign="LEFT",
-        )
+        chunk_size = math.ceil(version_count / block_count)
+        blocks: list[Table] = []
+        for start in range(0, version_count, chunk_size):
+            block_rows = [header_group] + summary_rows[start:start + chunk_size]
+            blocks.append(make_answers_table(block_rows))
+
+        if len(blocks) < block_count:
+            filler = Spacer(1, 1)
+            blocks.extend([filler] * (block_count - len(blocks)))
+        container = Table([blocks], colWidths=[block_width] * block_count, hAlign="LEFT")
         container.setStyle(
             TableStyle(
                 [
@@ -598,7 +623,7 @@ def build_solutions_flow(exams: list[dict[str, Any]], config: dict[str, Any], st
                     ("RIGHTPADDING", (0, 0), (-1, -1), 0),
                     ("TOPPADDING", (0, 0), (-1, -1), 0),
                     ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
-                    ("LEFTPADDING", (1, 0), (1, 0), 10 * mm),
+                    ("LEFTPADDING", (1, 0), (-1, 0), gutter),
                     ("LINEBEFORE", (0, 0), (-1, -1), 0, colors.white),
                     ("LINEAFTER", (0, 0), (-1, -1), 0, colors.white),
                     ("LINEABOVE", (0, 0), (-1, -1), 0, colors.white),
@@ -725,6 +750,7 @@ def main() -> int:
     try:
         config = read_config()
         validate_generation_counts(config)
+        normalize_multiple_choice_scoring(config)
         open_items = prepare_selected_items(config["open_questions"])
         exercise_items = prepare_selected_items(config["practical_exercises"])
         validate_points(config, open_items, exercise_items)

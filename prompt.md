@@ -81,6 +81,7 @@ Regole:
 - ogni domanda deve avere 4 opzioni;
 - una sola risposta corretta;
 - il testo deve essere chiaro, scolastico e non ambiguo;
+- il testo della domanda deve essere autosufficiente e naturale: non deve contenere riferimenti metatestuali come "secondo la lezione", "nel materiale", "nel testo", "nella slide", "nel PDF" o formule simili;
 - le opzioni errate devono essere davvero plausibili, cioe' credibili per uno studente che ha studiato in modo parziale o confuso;
 - le opzioni errate non devono essere palesemente assurde, caricaturali, tecnicamente impossibili o immediatamente eliminabili senza ragionare;
 - i distrattori devono essere vicini al contenuto corretto: devono appartenere allo stesso argomento, allo stesso contesto e allo stesso livello lessicale della risposta giusta;
@@ -163,6 +164,8 @@ Regole:
 - puo' attivare o disattivare ciascuna sezione da `config.json`;
 - mostra il punteggio di ogni domanda aperta o esercizio;
 - assegna punteggio fisso alle multiple choice dal config;
+- per le risposte sbagliate delle multiple choice deve sempre essere prevista una penalita': `points_wrong` deve essere sempre negativo e pari a meta' di `points_correct`;
+- esempio: se `points_correct = 0.5`, allora `points_wrong = -0.25`; se `points_correct = 1`, allora `points_wrong = -0.5`;
 - controlla che il totale dei punti attivi non superi il massimo consentito.
 - considera `9` come tetto massimo fisso dei punti distribuibili nella verifica.
 - quindi il mix tra quiz, domande aperte ed esercizi deve essere gestito soprattutto tramite `config.json`, sia abilitando/disabilitando le sezioni sia variando quantita' e punteggi in modo coerente con la richiesta dell'utente.
@@ -190,6 +193,7 @@ Regole:
 - compilare gli `include_ids` delle domande aperte e degli esercizi con gli ID effettivamente presenti;
 - impostare `questions_per_exam` a un valore compatibile con il numero di domande multiple disponibili;
 - impostare i punteggi in modo realistico;
+- impostare sempre `points_wrong` delle multiple choice a meta' in valore assoluto di `points_correct`, con segno negativo;
 - impostare sempre `max_points` a `9`;
 - assicurarti che il totale dei punti attivi non superi mai `9`;
 - distribuire i punti delle sezioni attive in modo realistico restando sempre entro il totale massimo di `9`;
@@ -205,8 +209,18 @@ Regole:
 - non ridondanti;
 - distribuite tra teoria e applicazione;
 - ben bilanciate per difficolta'.
+- scritte in un italiano corretto anche dal punto di vista ortografico e tipografico.
 
-10. Quando tutti i file sono stati preparati, devi eseguire anche lo script:
+10. Quando scrivi domande, opzioni, soluzioni, spiegazioni e testi di configurazione, devi prestare particolare attenzione alle lettere accentate italiane.
+
+Regole:
+
+- usa correttamente le vocali accentate come `è`, `à`, `ì`, `ò`, `ù` quando richieste dalla lingua italiana;
+- non sostituire gli accenti con apostrofi, per esempio evita forme come `e'`, `poiche'`, `cosi'`, `piu'` se il file e il formato supportano correttamente UTF-8;
+- controlla sempre il testo finale prima di salvare i file JSON o Markdown, correggendo eventuali accenti mancanti o scritti in modo improprio;
+- mantieni questa attenzione in tutti i file generati o aggiornati nel repository.
+
+11. Quando tutti i file sono stati preparati, devi eseguire anche lo script:
 
 ```bash
 python generate_verifiche.py
@@ -214,7 +228,7 @@ python generate_verifiche.py
 
 Se l'esecuzione fallisce, devi correggere i file necessari e riprovare finche' la generazione non riesce oppure finche' non emerge un blocco reale non risolvibile automaticamente.
 
-11. Al termine del lavoro non devi limitarti a dire che hai analizzato il materiale.
+12. Al termine del lavoro non devi limitarti a dire che hai analizzato il materiale.
     Devi:
 
 - aggiornare i file nelle cartelle corrette;
@@ -226,5 +240,5 @@ Se l'esecuzione fallisce, devi correggere i file necessari e riprovare finche' l
 - segnalare se il numero di domande multiple generate potrebbe essere insufficiente rispetto a `config.json`;
 - indicare dove e' stato salvato il PDF generato.
 
-12. Non produrre la verifica definitiva impaginata nel messaggio.
+13. Non produrre la verifica definitiva impaginata nel messaggio.
     Il tuo compito e' popolare i file sorgente che usera' lo script `generate_verifiche.py`.
