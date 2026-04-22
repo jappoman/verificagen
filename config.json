@@ -1,0 +1,54 @@
+{
+  "title": "Verifica di Informatica - Logica",
+  "subject": "Informatica",
+  "output_pdf": "output/verifiche_generate.pdf",
+  "number_of_students": 24,
+  "number_of_versions": 8,
+  "max_points": 9.0,
+  "random_seed": 12345,
+  "banner": {
+    "enabled": true,
+    "path": "banner/banner_pacioli_cut.png",
+    "max_height_mm": 22
+  },
+  "student_info": {
+    "show_name": true,
+    "show_class": true,
+    "show_date": true
+  },
+  "instructions": {
+    "enabled": true,
+    "content": "E' necessario il foglio di protocollo. Sul banco devono essere presenti solamente penne e fogli di protocollo. E' consentito l'uso della calcolatrice."
+  },
+  "evaluation_grid": {
+    "enabled": true,
+    "path": "evaluation-grid/base-grid.json"
+  },
+  "multiple_choice": {
+    "enabled": true,
+    "part_title": "Parte 1 - Quiz a risposta multipla",
+    "source_file": "multiple-choice-question/verifica_modulo_documenti_domande.json",
+    "questions_per_exam": 5,
+    "points_correct": 0.5,
+    "points_wrong": -0.25,
+    "shuffle_questions": true,
+    "shuffle_options": true
+  },
+  "open_questions": {
+    "enabled": true,
+    "part_title": "Parte 2 - Domande aperte",
+    "source_dir": "open-question",
+    "include_ids": [
+      "open_drive_01",
+      "open_formatting_01"
+    ]
+  },
+  "practical_exercises": {
+    "enabled": true,
+    "part_title": "Parte 3 - Esercizi",
+    "source_dir": "practical-exercises",
+    "include_ids": [
+      "exercise_drive_01"
+    ]
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "sections": [
+    {
+      "label": "DOMANDA\nTEORICA APERTA",
+      "criteria": [
+        {
+          "text": "Risposta del tutto assente o completamente non pertinente",
+          "percentage": "0% - 10%"
+        },
+        {
+          "text": "Risposta gravemente insufficiente",
+          "percentage": "10% - 40%"
+        },
+        {
+          "text": "Risposta non del tutto sufficiente",
+          "percentage": "40% - 50%"
+        },
+        {
+          "text": "Risposta sufficiente",
+          "percentage": "60%",
+          "emphasis": true
+        },
+        {
+          "text": "Risposta discreta/buona",
+          "percentage": "70% - 80%"
+        },
+        {
+          "text": "Risposta ottima/eccellente",
+          "percentage": "90% - 100%"
+        }
+      ]
+    },
+    {
+      "label": "DOMANDA A\nSCELTA MULTIPLA",
+      "criteria": [
+        {
+          "text": "Risposta del tutto assente o errata",
+          "percentage": "0%"
+        },
+        {
+          "text": "Risposta corretta",
+          "percentage": "100%",
+          "emphasis": true
+        }
+      ]
+    },
+    {
+      "label": "ESERCIZIO",
+      "criteria": [
+        {
+          "text": "Esecuzione del tutto assente o completamente non pertinente",
+          "percentage": "0% - 10%"
+        },
+        {
+          "text": "Esecuzione gravemente insufficiente",
+          "percentage": "10% - 40%"
+        },
+        {
+          "text": "Esecuzione non del tutto sufficiente",
+          "percentage": "40% - 50%"
+        },
+        {
+          "text": "Esecuzione sufficiente",
+          "percentage": "60%",
+          "emphasis": true
+        },
+        {
+          "text": "Esecuzione discreta/buona",
+          "percentage": "70% - 80%"
+        },
+        {
+          "text": "Esecuzione ottima/eccellente",
+          "percentage": "90% - 100%"
+        }
+      ]
+    }
+  ]
+}
