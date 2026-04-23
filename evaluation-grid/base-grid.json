@@ -1,6 +1,22 @@
 {
   "sections": [
     {
+      "applies_to": "multiple_choice",
+      "label": "DOMANDA A\nSCELTA MULTIPLA",
+      "criteria": [
+        {
+          "text": "Risposta del tutto assente o errata",
+          "percentage": "-50%"
+        },
+        {
+          "text": "Risposta corretta",
+          "percentage": "100%",
+          "emphasis": true
+        }
+      ]
+    },
+    {
+      "applies_to": "open_questions",
       "label": "DOMANDA\nTEORICA APERTA",
       "criteria": [
         {
@@ -31,20 +47,7 @@
       ]
     },
     {
-      "label": "DOMANDA A\nSCELTA MULTIPLA",
-      "criteria": [
-        {
-          "text": "Risposta del tutto assente o errata",
-          "percentage": "0%"
-        },
-        {
-          "text": "Risposta corretta",
-          "percentage": "100%",
-          "emphasis": true
-        }
-      ]
-    },
-    {
+      "applies_to": "practical_exercises",
       "label": "ESERCIZIO",
       "criteria": [
         {

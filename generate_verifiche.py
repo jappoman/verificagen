@@ -292,12 +292,21 @@ def build_styles():
     )
     styles.add(
         ParagraphStyle(
+            name="MultipleChoiceQuestion",
+            parent=styles["Question"],
+            leading=12,
+            spaceAfter=-1,
+        )
+    )
+    styles.add(
+        ParagraphStyle(
             name="Option",
             parent=styles["BodyText"],
             fontSize=10,
             leading=12,
             leftIndent=12 * mm,
             firstLineIndent=0,
+            spaceBefore=0,
             spaceAfter=0,
         )
     )
@@ -393,12 +402,50 @@ def build_student_info_table(config: dict[str, Any]) -> Table:
     return table
 
 
-def build_evaluation_grid(path: Path) -> Table:
+def get_enabled_evaluation_grid_targets(config: dict[str, Any]) -> set[str]:
+    enabled_targets: set[str] = set()
+    if config.get("multiple_choice", {}).get("enabled"):
+        enabled_targets.add("multiple_choice")
+    if config.get("open_questions", {}).get("enabled"):
+        enabled_targets.add("open_questions")
+    if config.get("practical_exercises", {}).get("enabled"):
+        enabled_targets.add("practical_exercises")
+    return enabled_targets
+
+
+def infer_grid_section_target(section: dict[str, Any]) -> str | None:
+    applies_to = str(section.get("applies_to", "")).strip()
+    if applies_to:
+        return applies_to
+
+    label = str(section.get("label", "")).strip().lower()
+    if "scelta multipla" in label or "quiz" in label:
+        return "multiple_choice"
+    if "aperta" in label or "teorica" in label:
+        return "open_questions"
+    if "esercizio" in label:
+        return "practical_exercises"
+    return None
+
+
+def build_evaluation_grid(path: Path, config: dict[str, Any]) -> Table:
     grid = load_json(path)
     base_styles = build_styles()
     sections = grid.get("sections")
     if not isinstance(sections, list) or not sections:
         raise ConfigError(f"Griglia di valutazione non valida: {path}")
+
+    enabled_targets = get_enabled_evaluation_grid_targets(config)
+    filtered_sections = []
+    for section in sections:
+        target = infer_grid_section_target(section)
+        if target is None or target in enabled_targets:
+            filtered_sections.append(section)
+
+    if not filtered_sections:
+        raise ConfigError(
+            "Nessuna sezione della griglia di valutazione corrisponde alle parti abilitate della verifica."
+        )
 
     label_style = ParagraphStyle(
         name="GridLabel",
@@ -421,7 +468,7 @@ def build_evaluation_grid(path: Path) -> Table:
     )
 
     table_rows = []
-    for section in sections:
+    for section in filtered_sections:
         criteria = section.get("criteria")
         if not isinstance(criteria, list) or not criteria:
             raise ConfigError(f"Sezione griglia non valida in {path}: {section.get('label')}")
@@ -484,16 +531,29 @@ def build_solution_blocks(solution: dict[str, Any], styles) -> list[Any]:
     return elements
 
 
+def build_exam_title(config: dict[str, Any]) -> str:
+    subject = str(config.get("subject", "")).strip()
+    title = str(config.get("title", "")).strip()
+
+    if subject and title:
+        return f"Verifica di {subject} - {title}"
+    if title:
+        return f"Verifica di {title}"
+    if subject:
+        return f"Verifica di {subject}"
+    return "Verifica"
+
+
 def add_header(flow: list[Any], config: dict[str, Any], styles, exam_id: str) -> None:
     banner = config.get("banner", {})
     if banner.get("enabled"):
         banner_path = resolve_path(banner["path"])
         if not banner_path.exists():
             raise ConfigError(f"Banner non trovato: {banner_path}")
-    flow.append(scale_image(banner_path, 180 * mm, float(banner["max_height_mm"]) * mm))
-    flow.append(Spacer(1, 4))
+        flow.append(scale_image(banner_path, 180 * mm, float(banner["max_height_mm"]) * mm))
+        flow.append(Spacer(1, 4))
 
-    flow.append(Paragraph(config["title"], styles["CenteredTitle"]))
+    flow.append(Paragraph(build_exam_title(config), styles["CenteredTitle"]))
     flow.append(build_student_info_table(config))
     flow.append(Spacer(1, 8))
 
@@ -504,7 +564,7 @@ def add_header(flow: list[Any], config: dict[str, Any], styles, exam_id: str) ->
 
     evaluation = config["evaluation_grid"]
     if evaluation.get("enabled"):
-        flow.append(build_evaluation_grid(resolve_path(evaluation["path"])))
+        flow.append(build_evaluation_grid(resolve_path(evaluation["path"]), config))
         flow.append(Spacer(1, 8))
 
 
@@ -520,7 +580,7 @@ def add_multiple_choice_section(flow: list[Any], exam: dict[str, Any], config: d
             f"{option['label']}. {option['text']}" for option in question.options
         )
         question_block: list[Any] = [
-            Paragraph(f"{index}. {question.question} <b>{score_label}</b>", styles["Question"]),
+            Paragraph(f"{index}. {question.question} <b>{score_label}</b>", styles["MultipleChoiceQuestion"]),
             Paragraph(options_html, styles["Option"]),
         ]
         question_block.append(Spacer(1, 3))
@@ -707,7 +767,7 @@ def build_document(config: dict[str, Any], exams: list[dict[str, Any]], copies: 
         leftMargin=15 * mm,
         topMargin=12 * mm,
         bottomMargin=12 * mm,
-        title=config["title"],
+        title=build_exam_title(config),
     )
 
     styles = build_styles()

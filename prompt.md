@@ -168,9 +168,13 @@ Regole per gli esercizi:
    Nel configurarlo devi:
 
 - usare il titolo fornito dall'utente se presente; altrimenti ricavarlo dal materiale e dalla richiesta;
+- non modificare il campo `subject` di `config.json`: la materia va sempre preservata così com'è già configurata;
+- puoi aggiornare il titolo della verifica (`title`), ma non la materia (`subject`), salvo richiesta esplicita e separata dell'utente;
 - non modificare mai `instructions.content`: va preservato esattamente com'è;
 - attivare o disattivare quiz, domande aperte ed esercizi in modo coerente con i file creati;
 - non disattivare la griglia di valutazione se è già presente in `config.json`; puoi aggiornarne il file solo se l'utente chiede esplicitamente una nuova griglia;
+- quando abiliti o disabiliti sezioni della prova in `config.json`, devi fare in modo che nella griglia di valutazione restino visibili solo le fasce corrispondenti alle sezioni attive;
+- quindi: quiz attivi => fascia quiz visibile; domande aperte attive => fascia domande aperte visibile; esercizi attivi => fascia esercizi visibile; le altre fasce devono essere escluse dalla griglia finale;
 - riflettere in `config.json` eventuali preferenze esplicite dell'utente sulla composizione della verifica;
 - regolare quantità, ID inclusi e punteggi in modo realistico e coerente con `max_points`;
 - impostare `questions_per_exam` in modo compatibile con il numero di domande multiple disponibili;

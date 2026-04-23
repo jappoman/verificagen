@@ -28,7 +28,7 @@
     "enabled": true,
     "part_title": "Parte 1 - Quiz a risposta multipla",
     "source_file": "multiple-choice-question/verifica_documenti_digitali.json",
-    "questions_per_exam": 20,
+    "questions_per_exam": 16,
     "points_correct": 0.5,
     "points_wrong": -0.25,
     "shuffle_questions": true,
