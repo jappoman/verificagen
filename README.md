@@ -21,8 +21,8 @@ Il generatore supporta:
 - intestazione con banner opzionale;
 - titolo costruito automaticamente come `Verifica di <subject> - <title>`;
 - campi studente configurabili: nome, classe, data;
-- istruzioni iniziali configurabili;
-- griglia di valutazione opzionale;
+- istruzioni iniziali obbligatorie;
+- griglia di valutazione obbligatoria;
 - griglia di valutazione filtrata automaticamente in base alle parti attive della prova;
 - quiz a risposta multipla con estrazione casuale delle domande;
 - mescolamento opzionale delle domande e delle alternative;
@@ -85,6 +85,7 @@ Campi principali:
 
 - Se `number_of_versions` è assente o vuoto, viene calcolato automaticamente con `ceil(number_of_students / 3)`.
 - `number_of_versions` non può essere maggiore di `number_of_students`.
+- `instructions.content` è obbligatorio e non può essere vuoto.
 - Se i quiz sono attivi, `points_correct` deve essere positivo.
 - Se i quiz sono attivi, `points_wrong` viene forzato automaticamente a `-points_correct / 2`.
 - Il totale delle parti attive non può superare `max_points`.
@@ -120,6 +121,7 @@ Comportamento:
 - verifica che ci sia una sola risposta corretta;
 - estrae le domande per ciascuna versione;
 - rietichetta le alternative come `A`, `B`, `C`, `D` dopo l'eventuale mescolamento.
+- il titolo di sezione viene numerato dinamicamente nel PDF, quindi in `part_title` va messo solo il nome base, per esempio `Quiz a risposta multipla`.
 
 ### Domande aperte
 
@@ -135,6 +137,7 @@ Comportamento:
 - lo script legge tutti i file JSON nella cartella;
 - seleziona solo gli elementi elencati in `include_ids`;
 - verifica la presenza di `solution.blocks`.
+- il prefisso `Parte N -` viene aggiunto automaticamente in base all'ordine reale delle sezioni attive.
 
 ### Esercizi
 
@@ -151,16 +154,16 @@ Il comportamento è analogo a quello delle domande aperte.
 
 La griglia è configurata in:
 
-- `evaluation_grid.enabled`
 - `evaluation_grid.path`
 
 Funzionalità:
 
-- può essere attivata o disattivata;
 - viene letta da un file JSON esterno;
 - può contenere più sezioni;
 - ogni sezione può dichiarare `applies_to`;
 - il generatore mostra solo le fasce coerenti con le parti attive della prova.
+
+La griglia non è opzionale: deve essere sempre attiva e valida.
 
 Mapping attuale:
 
@@ -267,6 +270,8 @@ Tra i vincoli attuali più importanti:
 Lo script interrompe la generazione con un errore esplicito se trova, tra le altre cose:
 
 - `config.json` mancante o non valido;
+- griglia di valutazione assente, disattivata o senza file valido;
+- istruzioni assenti o senza contenuto valido;
 - numero di alunni o versioni non valido;
 - più versioni che alunni;
 - punteggi incoerenti;

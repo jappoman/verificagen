@@ -3,6 +3,7 @@
 import json
 import math
 import random
+import re
 import sys
 from copy import deepcopy
 from dataclasses import dataclass
@@ -98,6 +99,30 @@ def normalize_multiple_choice_scoring(config: dict[str, Any]) -> None:
         raise ConfigError("points_correct deve essere positivo.")
 
     mc_config["points_wrong"] = -points_correct / 2
+
+
+def validate_evaluation_grid_config(config: dict[str, Any]) -> None:
+    evaluation = config.get("evaluation_grid")
+    if not isinstance(evaluation, dict):
+        raise ConfigError("La sezione evaluation_grid e' obbligatoria in config.json.")
+
+    path_value = str(evaluation.get("path", "")).strip()
+    if not path_value:
+        raise ConfigError("evaluation_grid.path e' obbligatorio.")
+
+    path = resolve_path(path_value)
+    if not path.exists():
+        raise ConfigError(f"File griglia di valutazione non trovato: {path}")
+
+
+def validate_instructions_config(config: dict[str, Any]) -> None:
+    instructions = config.get("instructions")
+    if not isinstance(instructions, dict):
+        raise ConfigError("La sezione instructions e' obbligatoria in config.json.")
+
+    content = str(instructions.get("content", "")).strip()
+    if not content:
+        raise ConfigError("instructions.content e' obbligatorio e non puo' essere vuoto.")
 
 
 def collect_json_items(source_dir: Path) -> dict[str, dict[str, Any]]:
@@ -544,6 +569,11 @@ def build_exam_title(config: dict[str, Any]) -> str:
     return "Verifica"
 
 
+def build_part_title(base_title: str, index: int) -> str:
+    cleaned_title = re.sub(r"^\s*Parte\s+\d+\s*-\s*", "", str(base_title).strip(), flags=re.IGNORECASE)
+    return f"Parte {index} - {cleaned_title}"
+
+
 def add_header(flow: list[Any], config: dict[str, Any], styles, exam_id: str) -> None:
     banner = config.get("banner", {})
     if banner.get("enabled"):
@@ -558,14 +588,12 @@ def add_header(flow: list[Any], config: dict[str, Any], styles, exam_id: str) ->
     flow.append(Spacer(1, 8))
 
     instructions = config["instructions"]
-    if instructions.get("enabled"):
-        instruction_text = instructions.get("content", "")
-        flow.append(Paragraph(f"<b>{exam_id}</b> - {instruction_text}", styles["Instruction"]))
+    instruction_text = instructions.get("content", "")
+    flow.append(Paragraph(f"<b>{exam_id}</b> - {instruction_text}", styles["Instruction"]))
 
     evaluation = config["evaluation_grid"]
-    if evaluation.get("enabled"):
-        flow.append(build_evaluation_grid(resolve_path(evaluation["path"]), config))
-        flow.append(Spacer(1, 8))
+    flow.append(build_evaluation_grid(resolve_path(evaluation["path"]), config))
+    flow.append(Spacer(1, 8))
 
 
 def add_multiple_choice_section(flow: list[Any], exam: dict[str, Any], config: dict[str, Any], styles) -> None:
@@ -600,13 +628,30 @@ def add_open_items_section(flow: list[Any], title: str, items: list[dict[str, An
 def build_exam_flow(exam: dict[str, Any], config: dict[str, Any], styles) -> list[Any]:
     flow: list[Any] = []
     add_header(flow, config, styles, exam["exam_id"])
-    add_multiple_choice_section(flow, exam, config, styles)
+
+    part_index = 1
+    if config["multiple_choice"].get("enabled"):
+        render_config = deepcopy(config)
+        render_config["multiple_choice"]["part_title"] = build_part_title(config["multiple_choice"]["part_title"], part_index)
+        add_multiple_choice_section(flow, exam, render_config, styles)
+        part_index += 1
 
     if config["open_questions"].get("enabled"):
-        add_open_items_section(flow, config["open_questions"]["part_title"], exam["open_questions"], styles)
+        add_open_items_section(
+            flow,
+            build_part_title(config["open_questions"]["part_title"], part_index),
+            exam["open_questions"],
+            styles,
+        )
+        part_index += 1
 
     if config["practical_exercises"].get("enabled"):
-        add_open_items_section(flow, config["practical_exercises"]["part_title"], exam["practical_exercises"], styles)
+        add_open_items_section(
+            flow,
+            build_part_title(config["practical_exercises"]["part_title"], part_index),
+            exam["practical_exercises"],
+            styles,
+        )
 
     return flow
 
@@ -811,6 +856,8 @@ def main() -> int:
         config = read_config()
         validate_generation_counts(config)
         normalize_multiple_choice_scoring(config)
+        validate_instructions_config(config)
+        validate_evaluation_grid_config(config)
         open_items = prepare_selected_items(config["open_questions"])
         exercise_items = prepare_selected_items(config["practical_exercises"])
         validate_points(config, open_items, exercise_items)

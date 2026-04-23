@@ -31,7 +31,7 @@ Quando ricevi la richiesta di generare il contenuto della verifica, devi:
 - `multiple-choice-question/*.json`
 - `open-question/*.json`
 - `practical-exercises/*.json`
-- opzionalmente `evaluation-grid/*.json` se l'utente chiede anche una griglia nuova
+- `evaluation-grid/*.json` se serve aggiornare la griglia esistente o crearne una nuova su richiesta dell'utente
 - `config.json`
 
 4. Per le domande a risposta multipla, devi produrre o aggiornare un file JSON nel formato seguente:
@@ -192,9 +192,12 @@ Regole per gli esercizi:
 - usare il titolo fornito dall'utente se presente; altrimenti ricavarlo dal materiale e dalla richiesta;
 - non modificare il campo `subject` di `config.json`: la materia va sempre preservata così com'è già configurata;
 - puoi aggiornare il titolo della verifica (`title`), ma non la materia (`subject`), salvo richiesta esplicita e separata dell'utente;
-- non modificare mai `instructions.content`: va preservato esattamente com'è;
+- le istruzioni della prova sono obbligatorie: in `config.json` deve sempre essere presente una sezione `instructions` valida con `instructions.content` non vuoto;
+- non modificare mai `instructions.content`: va preservato esattamente com'è, salvo richiesta esplicita dell'utente;
 - attivare o disattivare quiz, domande aperte ed esercizi in modo coerente con i file creati;
-- non disattivare la griglia di valutazione se è già presente in `config.json`; puoi aggiornarne il file solo se l'utente chiede esplicitamente una nuova griglia;
+- nei `part_title` delle sezioni non inserire numerazioni fisse come "Parte 1", "Parte 2", "Parte 3": il prefisso numerico viene aggiunto automaticamente dal generatore in base alle sezioni effettivamente attive;
+- la griglia di valutazione è obbligatoria: in `config.json` deve sempre essere presente una sezione `evaluation_grid` valida con un file referenziato da `evaluation_grid.path`;
+- puoi aggiornarne il file solo se l'utente chiede esplicitamente una nuova griglia o se serve adeguare quella esistente alla composizione della prova;
 - quando abiliti o disabiliti sezioni della prova in `config.json`, devi fare in modo che nella griglia di valutazione restino visibili solo le fasce corrispondenti alle sezioni attive;
 - quindi: quiz attivi => fascia quiz visibile; domande aperte attive => fascia domande aperte visibile; esercizi attivi => fascia esercizi visibile; le altre fasce devono essere escluse dalla griglia finale;
 - riflettere in `config.json` eventuali preferenze esplicite dell'utente sulla composizione della verifica;

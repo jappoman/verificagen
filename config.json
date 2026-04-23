@@ -17,16 +17,14 @@
     "show_date": true
   },
   "instructions": {
-    "enabled": true,
     "content": "È necessario il foglio di protocollo. È consentito l'uso della calcolatrice. Sul banco possono essere presenti solamente penne, fogli di protocollo ed eventuale calcolatrice."
   },
   "evaluation_grid": {
-    "enabled": true,
     "path": "evaluation-grid/base-grid.json"
   },
   "multiple_choice": {
     "enabled": true,
-    "part_title": "Parte 1 - Quiz a risposta multipla",
+    "part_title": "Quiz a risposta multipla",
     "source_file": "multiple-choice-question/verifica_documenti_digitali.json",
     "questions_per_exam": 16,
     "points_correct": 0.5,
@@ -36,13 +34,13 @@
   },
   "open_questions": {
     "enabled": false,
-    "part_title": "Parte 2 - Domande aperte",
+    "part_title": "Domande aperte",
     "source_dir": "open-question",
     "include_ids": []
   },
   "practical_exercises": {
     "enabled": false,
-    "part_title": "Parte 3 - Esercizi",
+    "part_title": "Esercizi",
     "source_dir": "practical-exercises",
     "include_ids": []
   }
