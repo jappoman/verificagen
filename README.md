@@ -3,6 +3,7 @@
 Generatore di verifiche in PDF a partire da contenuti strutturati in JSON e da una configurazione centrale in `config.json`.
 
 Il progetto è pensato per lavorare insieme a Codex:
+
 - l'utente carica il materiale didattico in `teaching-materials/`;
 - Codex analizza il materiale seguendo [`prompt.md`](./prompt.md);
 - Codex popola i file sorgente della verifica;
