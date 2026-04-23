@@ -85,8 +85,12 @@ Regole per le multiple choice:
 - `source` deve indicare file più pagina o sezione;
 - `explanation` deve essere breve ma utile alla correzione;
 - `options[].is_correct` deve marcare una sola opzione vera;
-- il numero di domande generate deve essere sufficiente a sostenere sia il peso che l'utente vuole dare ai quiz sia il numero di versioni previsto in `config.json`;
-- genera abbastanza domande da permettere allo script di costruire versioni variate, anche con parziale sovrapposizione tra i sottoinsiemi, perché l'ordine delle domande può comunque essere mescolato.
+- anche se l'utente specifica un numero preciso di domande a risposta multipla per ogni verifica, non devi limitarti a generare solo quel numero di domande nel file sorgente;
+- devi generare un pool più ampio di domande multiple rispetto a `questions_per_exam`, così lo script può costruire versioni realmente differenti e non solo con ordine o opzioni mescolati;
+- se l'utente specifica un numero preciso di domande, quel numero va interpretato come numero di quiz da includere in ciascuna verifica, non come limite massimo del pool totale da generare;
+- se l'utente non specifica un numero preciso, genera comunque un pool di domande sufficientemente ampio rispetto al bilanciamento scelto e al numero di versioni previsto in `config.json`;
+- evita quindi configurazioni in cui il pool totale delle domande multiple coincide con `questions_per_exam`, salvo richiesta esplicita dell'utente o impossibilità reale dovuta al materiale disponibile;
+- se, nonostante questo criterio, il materiale consente solo un pool limitato, devi segnalarlo chiaramente nel riepilogo finale.
 
 5. Per le domande aperte, devi creare un file JSON per domanda dentro `open-question`.
    Formato richiesto:
@@ -165,7 +169,8 @@ Regole per gli esercizi:
 
 - usare il titolo fornito dall'utente se presente; altrimenti ricavarlo dal materiale e dalla richiesta;
 - non modificare mai `instructions.content`: va preservato esattamente com'è;
-- attivare o disattivare quiz, domande aperte, esercizi e griglia in modo coerente con i file creati;
+- attivare o disattivare quiz, domande aperte ed esercizi in modo coerente con i file creati;
+- non disattivare la griglia di valutazione se è già presente in `config.json`; puoi aggiornarne il file solo se l'utente chiede esplicitamente una nuova griglia;
 - riflettere in `config.json` eventuali preferenze esplicite dell'utente sulla composizione della verifica;
 - regolare quantità, ID inclusi e punteggi in modo realistico e coerente con `max_points`;
 - impostare `questions_per_exam` in modo compatibile con il numero di domande multiple disponibili;

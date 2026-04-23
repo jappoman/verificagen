@@ -1,10 +1,10 @@
 {
-  "title": "Verifica di Informatica - Documenti digitali",
+  "title": "Documenti digitali",
   "subject": "Informatica",
   "output_pdf": "output/verifiche_generate.pdf",
   "number_of_students": 28,
   "number_of_versions": 8,
-  "max_points": 9.0,
+  "max_points": 10.0,
   "random_seed": 12345,
   "banner": {
     "enabled": true,
@@ -28,20 +28,17 @@
     "enabled": true,
     "part_title": "Parte 1 - Quiz a risposta multipla",
     "source_file": "multiple-choice-question/verifica_documenti_digitali.json",
-    "questions_per_exam": 10,
+    "questions_per_exam": 20,
     "points_correct": 0.5,
     "points_wrong": -0.25,
     "shuffle_questions": true,
     "shuffle_options": true
   },
   "open_questions": {
-    "enabled": true,
+    "enabled": false,
     "part_title": "Parte 2 - Domande aperte",
     "source_dir": "open-question",
-    "include_ids": [
-      "open_documenti_digitali_01",
-      "open_documenti_digitali_02"
-    ]
+    "include_ids": []
   },
   "practical_exercises": {
     "enabled": false,
