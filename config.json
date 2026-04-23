@@ -2,8 +2,8 @@
   "title": "Verifica di Informatica - Documenti digitali",
   "subject": "Informatica",
   "output_pdf": "output/verifiche_generate.pdf",
-  "number_of_students": 30,
-  "number_of_versions": 10,
+  "number_of_students": 28,
+  "number_of_versions": 8,
   "max_points": 9.0,
   "random_seed": 12345,
   "banner": {

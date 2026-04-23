@@ -1,36 +1,33 @@
 L'utente caricherà materiale didattico nella cartella `teaching-materials` sotto forma di PDF, slide, dispense, appunti o testi.
-L'utente indicherà anche:
 
-- il numero di alunni per cui generare la verifica.
+L'utente può indicare anche:
+
+- opzionalmente il titolo della verifica;
+- opzionalmente quali parti del materiale usare, anche file per file, specificando per esempio pagine, intervalli di pagine, sezioni, capitoli o argomenti;
 - opzionalmente preferenze sulla composizione della verifica, per esempio:
   - abilitare o disabilitare una o più sezioni;
   - dare più peso a quiz, domande aperte o esercizi;
-  - chiedere "solo domande a risposta multipla", "nessun esercizio", "focus sulle domande aperte", "più esercizi applicativi", ecc.
+  - chiedere "solo domande a risposta multipla", "nessun esercizio", "focus sulle domande aperte", "più esercizi applicativi";
   - chiedere una verifica più teorica, più pratica o bilanciata.
 
-Se l'utente non specifica il numero di alunni, devi usare come valore predefinito `30`.
-
-Se l'utente non specifica preferenze sulla composizione della verifica, devi scegliere una distribuzione equilibrata e realistica tra le sezioni disponibili, coerente con il materiale didattico e con il tetto massimo di `9` punti.
+Se l'utente non specifica preferenze sulla composizione della verifica, devi scegliere una distribuzione equilibrata e realistica tra le sezioni disponibili, coerente con il materiale didattico e con i vincoli già definiti in `config.json`.
 
 Quando ricevi la richiesta di generare il contenuto della verifica, devi:
 
-1. Analizzare tutto il materiale presente in `teaching-materials`.
-   Se l'utente ha indicato pagine, sezioni o argomenti specifici, limita l'analisi a quel perimetro.
-   Se non ha indicato nulla, usa tutto il materiale disponibile.
+1. Analizzare il materiale in `teaching-materials`.
+   Se l'utente ha indicato vincoli specifici, devi rispettarli file per file.
+   Se per un file non ha indicato alcun vincolo, devi usare tutto quel file.
+   Se non ha indicato alcun vincolo per nessun file, devi usare tutto il materiale disponibile.
 
-   Se l'utente ha espresso preferenze sulla composizione della verifica, devi tenerne conto fin dall'analisi e dalla selezione dei contenuti, privilegiando i materiali più adatti alle sezioni richieste.
-
-2. Individuare:
-
+2. Individuare nel materiale:
 - i concetti teorici principali;
 - i contenuti adatti a domande a risposta multipla;
 - i contenuti adatti a domande aperte;
 - i contenuti adatti a esercizi applicativi;
-- le fonti precise delle risposte o delle soluzioni nel materiale didattico.
+- le fonti precise delle risposte o delle soluzioni.
 
 3. Popolare o aggiornare i file strutturati del progetto, senza scrivere la verifica finale in forma libera.
    Devi generare contenuti nei formati richiesti dal repository:
-
 - `multiple-choice-question/*.json`
 - `open-question/*.json`
 - `practical-exercises/*.json`
@@ -76,23 +73,20 @@ Quando ricevi la richiesta di generare il contenuto della verifica, devi:
 }
 ```
 
-Regole:
+Regole per le multiple choice:
 
 - ogni domanda deve avere 4 opzioni;
 - una sola risposta corretta;
 - il testo deve essere chiaro, scolastico e non ambiguo;
-- il testo della domanda deve essere autosufficiente e naturale: non deve contenere riferimenti metatestuali come "secondo la lezione", "nel materiale", "nel testo", "nella slide", "nel PDF" o formule simili;
-- le opzioni errate devono essere davvero plausibili, cioè credibili per uno studente che ha studiato in modo parziale o confuso;
-- le opzioni errate non devono essere palesemente assurde, caricaturali, tecnicamente impossibili o immediatamente eliminabili senza ragionare;
-- i distrattori devono essere vicini al contenuto corretto: devono appartenere allo stesso argomento, allo stesso contesto e allo stesso livello lessicale della risposta giusta;
-- evita alternative sbagliate troppo lontane dal materiale, troppo generiche o costruite in modo tale da sembrare ovviamente false;
-- evita anche il caso opposto: la risposta corretta non deve essere l'unica molto più precisa, lunga o specifica delle altre; il livello di dettaglio delle quattro opzioni deve essere il più possibile omogeneo;
-- quando possibile, costruisci i distrattori a partire da errori realistici, confusioni frequenti, regole vicine, casi limite o inversioni plausibili dei concetti spiegati nel materiale;
-- prima di considerare valida una domanda, verifica che uno studente medio non possa individuare la risposta corretta solo per contrasto di stile, lunghezza, tono o assurdità delle alternative sbagliate;
-- `source` deve indicare file + pagina/sezione da cui deriva la risposta;
-- `explanation` deve contenere una spiegazione breve utile in correzione;
+- la domanda deve essere autosufficiente e naturale, senza riferimenti metatestuali come "nel materiale", "nella slide", "nel PDF";
+- le opzioni errate devono essere plausibili, vicine al contenuto corretto e costruite su errori realistici;
+- evita alternative palesemente assurde, troppo generiche o immediatamente eliminabili;
+- evita che la risposta corretta si distingua per lunghezza, precisione o stile rispetto alle altre;
+- `source` deve indicare file più pagina o sezione;
+- `explanation` deve essere breve ma utile alla correzione;
 - `options[].is_correct` deve marcare una sola opzione vera;
-- genera abbastanza domande da permettere allo script di estrarne sottoinsiemi diversi.
+- il numero di domande generate deve essere sufficiente a sostenere sia il peso che l'utente vuole dare ai quiz sia il numero di versioni previsto in `config.json`;
+- genera abbastanza domande da permettere allo script di estrarre sottoinsiemi diversi.
 
 5. Per le domande aperte, devi creare un file JSON per domanda dentro `open-question`.
    Formato richiesto:
@@ -118,13 +112,13 @@ Regole:
 }
 ```
 
-Regole:
+Regole per le domande aperte:
 
-- una domanda = un solo concetto o nucleo teorico;
-- stile tipo "Spiega", "Descrivi", "Illustra";
-- niente sottodomande spezzate salvo casi davvero necessari;
+- una domanda deve coprire un solo concetto o nucleo teorico;
+- usa formulazioni come "Spiega", "Descrivi", "Illustra";
+- evita sottodomande spezzate salvo casi davvero necessari;
 - `points` deve essere coerente con difficoltà e lunghezza della risposta;
-- la soluzione deve essere sufficientemente completa per correggere velocemente.
+- la soluzione deve essere abbastanza completa da permettere una correzione veloce.
 
 6. Per gli esercizi, devi creare un file JSON per esercizio dentro `practical-exercises`.
    Formato richiesto:
@@ -150,59 +144,34 @@ Regole:
 }
 ```
 
-Regole:
+Regole per gli esercizi:
 
 - l'esercizio deve richiedere applicazione concreta dei concetti;
 - può includere punti interni solo se resta un compito unitario;
-- la soluzione deve essere completa, utilizzabile in fase di correzione;
+- la soluzione deve essere completa e utilizzabile in correzione;
 - se serve uno schema, usa un blocco `preformatted`;
-- se l'utente fornisce immagini o schemi esterni da includere, puoi prevedere anche blocchi:
-  `{"type": "image", "path": "percorso/relativo/file.png"}`
+- se l'utente fornisce immagini o schemi esterni da includere, puoi prevedere anche blocchi come `{"type": "image", "path": "percorso/relativo/file.png"}`.
 
 7. Quando generi i contenuti, devi tenere presente che lo script finale:
 
 - può attivare o disattivare ciascuna sezione da `config.json`;
 - mostra il punteggio di ogni domanda aperta o esercizio;
-- assegna punteggio fisso alle multiple choice dal config;
-- per le risposte sbagliate delle multiple choice deve sempre essere prevista una penalità: `points_wrong` deve essere sempre negativo e pari a metà di `points_correct`;
-- esempio: se `points_correct = 0.5`, allora `points_wrong = -0.25`; se `points_correct = 1`, allora `points_wrong = -0.5`;
-- controlla che il totale dei punti attivi non superi il massimo consentito.
-- considera `9` come tetto massimo fisso dei punti distribuibili nella verifica.
-- quindi il mix tra quiz, domande aperte ed esercizi deve essere gestito soprattutto tramite `config.json`, sia abilitando/disabilitando le sezioni sia variando quantità e punteggi in modo coerente con la richiesta dell'utente.
+- assegna il punteggio delle multiple choice da `config.json`;
+- richiede sempre `points_wrong` negativo e pari a metà di `points_correct` per le multiple choice;
+- usa `max_points` in `config.json` come limite complessivo della verifica.
 
-8. Devi anche aggiornare `config.json` nel modo più consono rispetto al materiale generato, lasciandolo pronto per l'esecuzione immediata dello script.
+8. Devi aggiornare `config.json` in modo coerente con il materiale generato, lasciandolo pronto per l'esecuzione dello script.
    Nel configurarlo devi:
 
-- scegliere un titolo coerente con argomento e materiale;
-- non modificare mai il valore di `instructions.content` già presente in `config.json`;
-- il testo di `instructions.content` va preservato esattamente com'è, senza aggiunte, rimozioni o riformulazioni;
-- impostare `number_of_students` in base al numero di alunni indicato dall'utente;
-- se il numero di alunni non è stato indicato, impostare `number_of_students` a `30`;
-- calcolare automaticamente `number_of_versions` in modo proporzionato al numero di alunni;
-- usare una proporzione sensata che produca un buon numero di varianti;
-- rispettare il principio pratico seguente: con 30 alunni devono esserci almeno 10 versioni diverse;
-- come regola di default, usa `number_of_versions = ceil(number_of_students / 3)`, salvo casi particolari in cui il materiale disponibile non permetta una differenziazione sensata;
-- in generale, il numero di versioni deve essere abbastanza alto da differenziare bene gli alunni vicini, ma non così alto da rendere inutile la ripetizione delle versioni;
-- attivare o disattivare quiz, domande aperte, esercizi e griglia in modo coerente con i file che hai creato;
-- se l'utente chiede una composizione specifica della verifica, rifletterla esplicitamente in `config.json`;
-- questo significa, a seconda dei casi:
-- abilitare o disabilitare `multiple_choice`, `open_questions`, `practical_exercises`, `evaluation_grid`;
-- aumentare o ridurre `questions_per_exam` per dare più o meno peso ai quiz;
-- includere più o meno ID nelle domande aperte e negli esercizi;
-- redistribuire i punti tra le sezioni attive, restando sempre entro `max_points = 9`;
-- se l'utente chiede una verifica solo quiz, solo aperte, solo esercizi, oppure esclude esplicitamente una sezione, configurare il file in modo coerente senza lasciare sezioni attive inutilmente;
-- se l'utente chiede "più peso" a una sezione, non limitarti ad aggiungere file: fai in modo che il peso emerga davvero nella configurazione finale attraverso quantità, attivazione e punteggi;
-- compilare gli `include_ids` delle domande aperte e degli esercizi con gli ID effettivamente presenti;
-- impostare `questions_per_exam` a un valore compatibile con il numero di domande multiple disponibili;
-- impostare i punteggi in modo realistico;
-- impostare sempre `points_wrong` delle multiple choice a metà in valore assoluto di `points_correct`, con segno negativo;
-- impostare sempre `max_points` a `9`;
-- assicurarti che il totale dei punti attivi non superi mai `9`;
-- distribuire i punti delle sezioni attive in modo realistico restando sempre entro il totale massimo di `9`;
-- assicurarti che il numero di versioni non superi il numero di alunni;
-- lasciare una configurazione che permetta allo script di generare tante copie quante sono gli alunni, distribuite il più equamente possibile tra le versioni;
-- lasciare una configurazione che produca nel PDF un ordine interlecciato delle copie, cioè prima un giro completo delle versioni, poi un secondo giro e così via, in modo che studenti vicini ricevano versioni diverse;
-- lasciare percorsi e nomi file corretti e già utilizzabili dallo script.
+- usare il titolo fornito dall'utente se presente; altrimenti ricavarlo dal materiale e dalla richiesta;
+- non modificare mai `instructions.content`: va preservato esattamente com'è;
+- attivare o disattivare quiz, domande aperte, esercizi e griglia in modo coerente con i file creati;
+- riflettere in `config.json` eventuali preferenze esplicite dell'utente sulla composizione della verifica;
+- regolare quantità, ID inclusi e punteggi in modo realistico e coerente con `max_points`;
+- impostare `questions_per_exam` in modo compatibile con il numero di domande multiple disponibili;
+- impostare sempre `points_wrong` a metà in valore assoluto di `points_correct`, con segno negativo;
+- non modificare i valori strutturali di `config.json` che definiscono la numerosità della generazione, come `number_of_students` e `number_of_versions`, salvo esplicita richiesta dell'utente;
+- lasciare percorsi, nomi file e configurazione finale già utilizzabili dallo script.
 
 9. I contenuti devono essere progettati per una verifica realistica, svolgibile da uno studente medio nel tempo indicato o implicato dal materiale.
    Le domande devono essere:
@@ -210,16 +179,16 @@ Regole:
 - pertinenti;
 - non ridondanti;
 - distribuite tra teoria e applicazione;
-- ben bilanciate per difficoltà.
+- ben bilanciate per difficoltà;
 - scritte in un italiano corretto anche dal punto di vista ortografico e tipografico.
 
 10. Quando scrivi domande, opzioni, soluzioni, spiegazioni e testi di configurazione, devi prestare particolare attenzione alle lettere accentate italiane.
 
 Regole:
 
-- usa correttamente le vocali accentate come `è`, `à`, `ì`, `ò`, `ù` quando richieste dalla lingua italiana;
-- non sostituire gli accenti con apostrofi: evita forme scorrette come `e'`, `poiche'`, `cosi'`, `piu'` e usa invece `è`, `poiché`, `così`, `più` quando il file e il formato supportano correttamente UTF-8;
-- controlla sempre il testo finale prima di salvare i file JSON o Markdown, correggendo eventuali accenti mancanti o scritti in modo improprio;
+- usa correttamente le vocali accentate come `è`, `à`, `ì`, `ò`, `ù` quando richieste;
+- non sostituire gli accenti con apostrofi: evita forme scorrette come `e'`, `poiche'`, `cosi'`, `piu'`;
+- controlla sempre il testo finale prima di salvare i file JSON o Markdown;
 - mantieni questa attenzione in tutti i file generati o aggiornati nel repository.
 
 11. Quando tutti i file sono stati preparati, devi eseguire anche lo script:
