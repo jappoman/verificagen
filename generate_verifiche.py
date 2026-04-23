@@ -295,7 +295,7 @@ def build_styles():
             name="MultipleChoiceQuestion",
             parent=styles["Question"],
             leading=12,
-            spaceAfter=-1,
+            spaceAfter=1,
         )
     )
     styles.add(
@@ -583,7 +583,7 @@ def add_multiple_choice_section(flow: list[Any], exam: dict[str, Any], config: d
             Paragraph(f"{index}. {question.question} <b>{score_label}</b>", styles["MultipleChoiceQuestion"]),
             Paragraph(options_html, styles["Option"]),
         ]
-        question_block.append(Spacer(1, 3))
+        question_block.append(Spacer(1, 2))
         flow.append(KeepTogether(question_block))
 
 

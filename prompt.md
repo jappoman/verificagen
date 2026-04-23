@@ -80,8 +80,30 @@ Regole per le multiple choice:
 - il testo deve essere chiaro, scolastico e non ambiguo;
 - la domanda deve essere autosufficiente e naturale, senza riferimenti metatestuali come "nel materiale", "nella slide", "nel PDF";
 - le opzioni errate devono essere plausibili, vicine al contenuto corretto e costruite su errori realistici;
+- le opzioni errate non devono essere "segnalatori" della risposta giusta: non devono risultare palesemente assurde, caricaturali, troppo estreme, fuori contesto o banalmente false;
+- i distrattori devono assomigliare davvero alla risposta corretta per categoria, registro linguistico, livello di precisione, lunghezza e struttura sintattica;
+- quando possibile, costruisci i distrattori partendo da:
+  - un dettaglio quasi corretto ma leggermente sbagliato;
+  - una regola vera applicata nel contesto sbagliato;
+  - un termine tecnico vicino ma non esatto;
+  - una procedura simile ma con un passaggio scorretto;
+  - un'inversione realistica di causa/effetto, funzione/strumento, vantaggio/limite;
+- almeno uno o due distrattori dovrebbero essere abbastanza credibili da poter trarre in inganno uno studente che ha studiato in modo superficiale;
+- se la risposta corretta è molto specifica, anche le alternative sbagliate devono essere specifiche e credibili: evita di affiancarle a risposte generiche, vaghe o evidentemente "buttate lì";
+- se la risposta corretta usa una formulazione breve, anche i distrattori dovrebbero avere una brevità comparabile; se è una frase completa, anche i distrattori dovrebbero esserlo;
+- evita set di opzioni in cui una sola alternativa appartiene davvero alla stessa categoria logica delle altre tre;
+- evita il pattern "1 risposta seria + 3 risposte sciocche": tutte e quattro devono sembrare inizialmente possibili a una lettura rapida;
+- se una domanda usa parole come "sempre", "solo", "mai", "automaticamente", "obbligatoriamente", usale con molta prudenza nelle opzioni, perché spesso rendono i distrattori troppo facili da scartare;
 - evita alternative palesemente assurde, troppo generiche o immediatamente eliminabili;
 - evita che la risposta corretta si distingua per lunghezza, precisione o stile rispetto alle altre;
+- prima di salvare una domanda, fai un controllo qualitativo sulle alternative e riscrivile se la risposta corretta si riconosce troppo facilmente al primo colpo;
+- in particolare, scarta e riscrivi una batteria di opzioni se succede una di queste cose:
+  - una risposta è nettamente più precisa, tecnica o ben scritta delle altre;
+  - una o più alternative sono chiaramente fuori argomento;
+  - una o più alternative sono troppo corte o troppo lunghe rispetto alle altre;
+  - basta il buon senso, senza conoscere il contenuto, per eliminare subito due o tre opzioni;
+  - i distrattori non rappresentano errori realistici che uno studente potrebbe davvero fare;
+- il livello di qualità desiderato è questo: leggendo le quattro opzioni, uno studente preparato deve dover ragionare per scegliere; uno studente poco preparato non deve poter individuare la risposta giusta solo "a naso";
 - `source` deve indicare file più pagina o sezione;
 - `explanation` deve essere breve ma utile alla correzione;
 - `options[].is_correct` deve marcare una sola opzione vera;
