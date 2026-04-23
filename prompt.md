@@ -86,7 +86,7 @@ Regole per le multiple choice:
 - `explanation` deve essere breve ma utile alla correzione;
 - `options[].is_correct` deve marcare una sola opzione vera;
 - il numero di domande generate deve essere sufficiente a sostenere sia il peso che l'utente vuole dare ai quiz sia il numero di versioni previsto in `config.json`;
-- genera abbastanza domande da permettere allo script di estrarre sottoinsiemi diversi.
+- genera abbastanza domande da permettere allo script di costruire versioni variate, anche con parziale sovrapposizione tra i sottoinsiemi, perché l'ordine delle domande può comunque essere mescolato.
 
 5. Per le domande aperte, devi creare un file JSON per domanda dentro `open-question`.
    Formato richiesto:
