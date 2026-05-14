@@ -14,6 +14,8 @@ ROOT = Path(__file__).resolve().parent
 DEFAULT_SOURCE_DIR = ROOT / "teaching-materials"
 DEFAULT_OUTPUT_DIR = DEFAULT_SOURCE_DIR / "_extracted-text"
 MIN_TEXT_CHARS_PER_PAGE = 80
+MIN_CACHED_TEXT_CHARS = 500
+DEFAULT_OCR_WORKERS = 4
 
 
 class PreparationError(Exception):
@@ -44,6 +46,33 @@ def slug_for(path: Path) -> str:
     safe = "".join(char if char.isalnum() else "-" for char in path.stem.lower())
     safe = "-".join(part for part in safe.split("-") if part)
     return safe or "materiale"
+
+
+def output_path_for(path: Path, output_dir: Path) -> Path:
+    supported = {".pdf", ".txt", ".md", ".png", ".jpg", ".jpeg", ".tif", ".tiff", ".bmp", ".webp"}
+    suffix = ".md" if path.suffix.lower() in supported else ".unsupported.md"
+    return output_dir / f"{slug_for(path)}{suffix}"
+
+
+def extracted_text_char_count(markdown: str) -> int:
+    ignored_prefixes = ("#", "_Metodo:")
+    ignored_lines = {"[Nessun testo estratto]"}
+    count = 0
+    for raw_line in markdown.splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith(ignored_prefixes) or line in ignored_lines:
+            continue
+        count += len(line)
+    return count
+
+
+def cached_output_is_usable(source_path: Path, output_path: Path, min_chars: int) -> bool:
+    if not output_path.exists():
+        return False
+    if output_path.stat().st_mtime < source_path.stat().st_mtime:
+        return False
+    markdown = output_path.read_text(encoding="utf-8", errors="replace")
+    return extracted_text_char_count(markdown) >= min_chars
 
 
 def page_count(pdf_path: Path) -> int:
@@ -194,14 +223,14 @@ def prepare_pdf(
                     else:
                         pages[page_number - 1] = (page_number, "OCR tesseract", text)
 
-    output_path = output_dir / f"{slug_for(pdf_path)}.md"
+    output_path = output_path_for(pdf_path, output_dir)
     write_markdown(output_path, pdf_path.name, [page for page in pages if page is not None])
     return output_path, used_ocr, warnings
 
 
 def prepare_plain_text(path: Path, output_dir: Path) -> tuple[Path, bool, list[str]]:
     text = path.read_text(encoding="utf-8", errors="replace")
-    output_path = output_dir / f"{slug_for(path)}.md"
+    output_path = output_path_for(path, output_dir)
     write_markdown(output_path, path.name, [(None, "lettura diretta", text)])
     return output_path, False, []
 
@@ -218,7 +247,7 @@ def prepare_image(path: Path, output_dir: Path, language: str) -> tuple[Path, bo
         used_ocr = False
         warnings.append(f"{path.name}: {error}")
 
-    output_path = output_dir / f"{slug_for(path)}.md"
+    output_path = output_path_for(path, output_dir)
     write_markdown(output_path, path.name, [(None, method, text)])
     return output_path, used_ocr, warnings
 
@@ -238,7 +267,13 @@ def prepare_material(
     language: str,
     dpi: int,
     ocr_workers: int,
+    force: bool,
+    min_cached_chars: int,
 ) -> tuple[Path, bool, list[str]]:
+    output_path = output_path_for(path, output_dir)
+    if not force and cached_output_is_usable(path, output_path, min_cached_chars):
+        return output_path, False, []
+
     suffix = path.suffix.lower()
     if suffix == ".pdf":
         return prepare_pdf(path, output_dir, language, dpi, ocr_workers)
@@ -247,7 +282,7 @@ def prepare_material(
     if suffix in {".png", ".jpg", ".jpeg", ".tif", ".tiff", ".bmp", ".webp"}:
         return prepare_image(path, output_dir, language)
 
-    output_path = output_dir / f"{slug_for(path)}.unsupported.md"
+    output_path = output_path_for(path, output_dir)
     write_markdown(
         output_path,
         path.name,
@@ -267,8 +302,19 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--ocr-workers",
         type=int,
-        default=1,
+        default=DEFAULT_OCR_WORKERS,
         help="Numero di pagine OCR da elaborare in parallelo per ciascun PDF.",
+    )
+    parser.add_argument(
+        "--min-cached-chars",
+        type=int,
+        default=MIN_CACHED_TEXT_CHARS,
+        help="Numero minimo di caratteri reali per riusare un Markdown già estratto.",
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Rigenera gli output anche quando esistono già file Markdown corposi e aggiornati.",
     )
     return parser.parse_args()
 
@@ -283,6 +329,9 @@ def main() -> int:
         return 1
     if args.ocr_workers <= 0:
         print("--ocr-workers deve essere un intero positivo.", file=sys.stderr)
+        return 2
+    if args.min_cached_chars < 0:
+        print("--min-cached-chars non può essere negativo.", file=sys.stderr)
         return 2
 
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -303,6 +352,8 @@ def main() -> int:
                 args.language,
                 args.dpi,
                 args.ocr_workers,
+                args.force,
+                args.min_cached_chars,
             )
         except (PreparationError, subprocess.CalledProcessError) as error:
             all_warnings.append(f"{material.name}: {error}")
@@ -311,7 +362,8 @@ def main() -> int:
         if used_ocr:
             ocr_count += 1
         all_warnings.extend(warnings)
-        print(f"Creato {output_path.relative_to(ROOT)}")
+        action = "Creato" if used_ocr or warnings or args.force else "Pronto"
+        print(f"{action} {output_path.relative_to(ROOT)}")
 
     print()
     print(f"Materiali elaborati: {len(materials)}")

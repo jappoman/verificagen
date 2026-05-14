@@ -19,11 +19,12 @@ Quando ricevi la richiesta di generare il contenuto della verifica, devi:
    Se ci sono PDF o immagini, oppure se non sei certo che i PDF contengano testo estraibile, esegui:
 
 ```bash
-python prepare_teaching_materials.py
+python prepare_teaching_materials.py --ocr-workers 4
 ```
 
    Poi analizza prima di tutto i file Markdown generati in `teaching-materials/_extracted-text`.
    Questi file contengono il testo estratto dai PDF testuali e, quando disponibile, il testo OCR dei PDF scannerizzati o delle immagini.
+   Il comando riusa automaticamente i Markdown già estratti quando sono aggiornati e contengono testo sufficiente; se serve rigenerare tutto da zero, eseguilo con `--force`.
    Se il comando segnala che `tesseract` non e' installato, oppure se alcune pagine risultano senza testo estratto, devi avvisare l'utente prima di generare la verifica: in quel caso il materiale visivo potrebbe non essere stato letto correttamente.
    Quando citi le fonti nei JSON, usa comunque il nome del file originale e la pagina/sezione, non il solo file Markdown estratto.
 
