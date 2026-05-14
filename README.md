@@ -252,6 +252,32 @@ Lo script genera PDF in formato `A4` con:
 
 Il banner, se attivo, viene scalato automaticamente.
 
+## Archiviare una verifica conclusa
+
+Il generatore resta pensato per lavorare su una verifica alla volta. Quando una generazione è conclusa e vuoi conservare materiali, sorgenti JSON e PDF prima di prepararne una nuova, usa:
+
+```bash
+python archive_generation.py
+```
+
+Il comando crea una cartella in `archives/` con:
+
+- `config.json`;
+- `prompt.md`;
+- materiali didattici presenti in `teaching-materials/`;
+- domande, esercizi e file sorgente presenti nelle cartelle operative;
+- PDF e altri output presenti in `output/`;
+- griglia di valutazione e banner referenziati dalla configurazione;
+- `manifest.json` con titolo, materia, seed, numero di versioni e file copiati.
+
+Se vuoi anche svuotare le cartelle operative dopo aver creato l'archivio, esegui:
+
+```bash
+python archive_generation.py --reset-current
+```
+
+L'opzione `--reset-current` elimina i file correnti da `teaching-materials/`, `multiple-choice-question/`, `open-question/`, `practical-exercises/` e `output/`, lasciando al loro posto i `.gitkeep`.
+
 ## Ruolo di `prompt.md`
 
 [`prompt.md`](./prompt.md) definisce il comportamento atteso da Codex quando costruisce o aggiorna i file sorgente.

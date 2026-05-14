@@ -8,6 +8,7 @@ venv/
 env/
 
 output/
+archives/
 teaching-materials/*
 multiple-choice-question/*
 open-question/*
