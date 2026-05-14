@@ -14,6 +14,19 @@ Se l'utente non specifica preferenze sulla composizione della verifica, devi sce
 
 Quando ricevi la richiesta di generare il contenuto della verifica, devi:
 
+0. Preparare il materiale didattico prima dell'analisi, quando serve.
+   Prima controlla i file presenti in `teaching-materials`.
+   Se ci sono PDF o immagini, oppure se non sei certo che i PDF contengano testo estraibile, esegui:
+
+```bash
+python prepare_teaching_materials.py
+```
+
+   Poi analizza prima di tutto i file Markdown generati in `teaching-materials/_extracted-text`.
+   Questi file contengono il testo estratto dai PDF testuali e, quando disponibile, il testo OCR dei PDF scannerizzati o delle immagini.
+   Se il comando segnala che `tesseract` non e' installato, oppure se alcune pagine risultano senza testo estratto, devi avvisare l'utente prima di generare la verifica: in quel caso il materiale visivo potrebbe non essere stato letto correttamente.
+   Quando citi le fonti nei JSON, usa comunque il nome del file originale e la pagina/sezione, non il solo file Markdown estratto.
+
 1. Analizzare il materiale in `teaching-materials`.
    Se l'utente ha indicato vincoli specifici, devi rispettarli file per file.
    Se per un file non ha indicato alcun vincolo, devi usare tutto quel file.

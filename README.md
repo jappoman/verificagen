@@ -51,6 +51,15 @@ Il generatore supporta:
 
 1. Inserisci il materiale didattico in `teaching-materials/`.
 2. Chiedi a Codex di generare o aggiornare la verifica seguendo [`prompt.md`](./prompt.md).
+   Se trova PDF o immagini nei materiali, il prompt gli dice di preparare automaticamente una versione testuale con:
+
+```bash
+python prepare_teaching_materials.py
+```
+
+   Il comando crea file Markdown in `teaching-materials/_extracted-text/`.
+   Per i PDF testuali usa `pdftotext`; per PDF scannerizzati o immagini usa Tesseract OCR, se installato.
+
 3. Verifica che `config.json` rispecchi la composizione desiderata della prova.
 4. Esegui:
 
@@ -64,8 +73,11 @@ python generate_verifiche.py
 
 - Python 3
 - `reportlab`
+- `poppler-utils` per estrarre testo dai PDF (`pdftotext`, `pdfinfo`, `pdftoppm`)
+- opzionale ma consigliato: Tesseract OCR con lingua italiana per leggere PDF scannerizzati e immagini
 
 Se `reportlab` non è disponibile, lo script non può generare il PDF.
+Se Tesseract non è disponibile, `python prepare_teaching_materials.py` riesce comunque a estrarre i PDF testuali ma segnala i PDF scannerizzati che non ha potuto leggere via OCR.
 
 ## Configurazione
 
