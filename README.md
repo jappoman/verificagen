@@ -290,6 +290,35 @@ python archive_generation.py --reset-current
 
 L'opzione `--reset-current` elimina i file correnti da `teaching-materials/`, `multiple-choice-question/`, `open-question/`, `practical-exercises/` e `output/`, lasciando al loro posto i `.gitkeep`.
 
+## Richiamare una verifica archiviata
+
+Per riprendere una verifica archiviata, mostra prima gli archivi disponibili:
+
+```bash
+make archives
+```
+
+Poi richiama quello desiderato:
+
+```bash
+make recall ARCHIVE=20260514-162233-documenti-digitali
+```
+
+`ARCHIVE` può essere il nome completo della cartella, una sottostringa univoca o un percorso.
+Il richiamo ripristina `config.json`, materiali didattici, domande, esercizi, output, griglia di valutazione e banner archiviati.
+Per sicurezza il comando si ferma se l'area corrente contiene già file; per sovrascriverla esplicitamente:
+
+```bash
+make recall ARCHIVE=20260514-162233-documenti-digitali FORCE=1
+```
+
+Il file `prompt.md` non viene ripristinato di default, così il workflow corrente resta aggiornato.
+Se vuoi recuperare anche il prompt archiviato, usa direttamente:
+
+```bash
+python archive_generation.py --restore 20260514-162233-documenti-digitali --include-prompt --force
+```
+
 ## Ruolo di `prompt.md`
 
 [`prompt.md`](./prompt.md) definisce il comportamento atteso da Codex quando costruisce o aggiorna i file sorgente.
