@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 
 import argparse
+import os
 import shutil
 import subprocess
 import sys
 import tempfile
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 
@@ -18,13 +20,19 @@ class PreparationError(Exception):
     pass
 
 
-def run_command(command: list[str], *, check: bool = True) -> subprocess.CompletedProcess[str]:
+def run_command(
+    command: list[str],
+    *,
+    check: bool = True,
+    env: dict[str, str] | None = None,
+) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         command,
         check=check,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
+        env=env,
     )
 
 
@@ -93,14 +101,18 @@ def ocr_pdf_page(pdf_path: Path, page_number: int, language: str, dpi: int) -> s
             ]
         )
         image_path = prefix.with_suffix(".png")
+        tesseract_env = os.environ.copy()
+        tesseract_env.setdefault("OMP_THREAD_LIMIT", "1")
         result = run_command(
             ["tesseract", str(image_path), "stdout", "-l", language],
             check=False,
+            env=tesseract_env,
         )
         if result.returncode != 0 and language != "ita":
             result = run_command(
                 ["tesseract", str(image_path), "stdout", "-l", "ita"],
                 check=False,
+                env=tesseract_env,
             )
         return result.stdout.strip()
 
@@ -128,9 +140,23 @@ def write_markdown(output_path: Path, title: str, pages: list[tuple[int | None, 
     output_path.write_text("\n".join(lines), encoding="utf-8")
 
 
-def prepare_pdf(pdf_path: Path, output_dir: Path, language: str, dpi: int) -> tuple[Path, bool, list[str]]:
+def ocr_pdf_page_result(pdf_path: Path, page_number: int, language: str, dpi: int) -> tuple[int, str, str | None]:
+    try:
+        return page_number, ocr_pdf_page(pdf_path, page_number, language, dpi), None
+    except PreparationError as error:
+        return page_number, "", str(error)
+
+
+def prepare_pdf(
+    pdf_path: Path,
+    output_dir: Path,
+    language: str,
+    dpi: int,
+    ocr_workers: int,
+) -> tuple[Path, bool, list[str]]:
     pages_total = page_count(pdf_path)
-    pages: list[tuple[int | None, str, str]] = []
+    pages: list[tuple[int | None, str, str] | None] = [None] * pages_total
+    ocr_page_numbers: list[int] = []
     warnings: list[str] = []
     used_ocr = False
 
@@ -139,18 +165,37 @@ def prepare_pdf(pdf_path: Path, output_dir: Path, language: str, dpi: int) -> tu
         method = "pdftotext"
 
         if len(text.strip()) < MIN_TEXT_CHARS_PER_PAGE:
-            try:
-                text = ocr_pdf_page(pdf_path, page_number, language, dpi)
-                method = "OCR tesseract"
-                used_ocr = True
-            except PreparationError as error:
-                method = "OCR non eseguito"
-                warnings.append(f"{pdf_path.name}, pagina {page_number}: {error}")
+            ocr_page_numbers.append(page_number)
+        else:
+            pages[page_number - 1] = (page_number, method, text)
 
-        pages.append((page_number, method, text))
+    if ocr_page_numbers:
+        used_ocr = True
+        if ocr_workers <= 1 or len(ocr_page_numbers) == 1:
+            for page_number in ocr_page_numbers:
+                page_number, text, error = ocr_pdf_page_result(pdf_path, page_number, language, dpi)
+                if error:
+                    pages[page_number - 1] = (page_number, "OCR non eseguito", "")
+                    warnings.append(f"{pdf_path.name}, pagina {page_number}: {error}")
+                else:
+                    pages[page_number - 1] = (page_number, "OCR tesseract", text)
+        else:
+            workers = min(ocr_workers, len(ocr_page_numbers))
+            with ThreadPoolExecutor(max_workers=workers) as executor:
+                futures = [
+                    executor.submit(ocr_pdf_page_result, pdf_path, page_number, language, dpi)
+                    for page_number in ocr_page_numbers
+                ]
+                for future in as_completed(futures):
+                    page_number, text, error = future.result()
+                    if error:
+                        pages[page_number - 1] = (page_number, "OCR non eseguito", "")
+                        warnings.append(f"{pdf_path.name}, pagina {page_number}: {error}")
+                    else:
+                        pages[page_number - 1] = (page_number, "OCR tesseract", text)
 
     output_path = output_dir / f"{slug_for(pdf_path)}.md"
-    write_markdown(output_path, pdf_path.name, pages)
+    write_markdown(output_path, pdf_path.name, [page for page in pages if page is not None])
     return output_path, used_ocr, warnings
 
 
@@ -187,10 +232,16 @@ def iter_materials(source_dir: Path) -> list[Path]:
     ]
 
 
-def prepare_material(path: Path, output_dir: Path, language: str, dpi: int) -> tuple[Path, bool, list[str]]:
+def prepare_material(
+    path: Path,
+    output_dir: Path,
+    language: str,
+    dpi: int,
+    ocr_workers: int,
+) -> tuple[Path, bool, list[str]]:
     suffix = path.suffix.lower()
     if suffix == ".pdf":
-        return prepare_pdf(path, output_dir, language, dpi)
+        return prepare_pdf(path, output_dir, language, dpi, ocr_workers)
     if suffix in {".txt", ".md"}:
         return prepare_plain_text(path, output_dir)
     if suffix in {".png", ".jpg", ".jpeg", ".tif", ".tiff", ".bmp", ".webp"}:
@@ -213,6 +264,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output-dir", default=str(DEFAULT_OUTPUT_DIR), help="Cartella dei testi estratti.")
     parser.add_argument("--language", default="ita+eng", help="Lingue Tesseract, per esempio ita o ita+eng.")
     parser.add_argument("--dpi", type=int, default=300, help="Risoluzione usata per convertire le pagine PDF in immagini.")
+    parser.add_argument(
+        "--ocr-workers",
+        type=int,
+        default=1,
+        help="Numero di pagine OCR da elaborare in parallelo per ciascun PDF.",
+    )
     return parser.parse_args()
 
 
@@ -224,6 +281,9 @@ def main() -> int:
     if not source_dir.exists():
         print(f"Cartella materiali non trovata: {source_dir}", file=sys.stderr)
         return 1
+    if args.ocr_workers <= 0:
+        print("--ocr-workers deve essere un intero positivo.", file=sys.stderr)
+        return 2
 
     output_dir.mkdir(parents=True, exist_ok=True)
     materials = iter_materials(source_dir)
@@ -237,7 +297,13 @@ def main() -> int:
 
     for material in materials:
         try:
-            output_path, used_ocr, warnings = prepare_material(material, output_dir, args.language, args.dpi)
+            output_path, used_ocr, warnings = prepare_material(
+                material,
+                output_dir,
+                args.language,
+                args.dpi,
+                args.ocr_workers,
+            )
         except (PreparationError, subprocess.CalledProcessError) as error:
             all_warnings.append(f"{material.name}: {error}")
             continue
